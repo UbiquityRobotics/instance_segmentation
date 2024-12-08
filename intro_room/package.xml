@@ -4,12 +4,15 @@
   <name>intro_room</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="metalliccj@gmail.com">thechristyjo</maintainer>
-  <license>TODO: License declaration</license>
+  <maintainer email="metalliccj@gmail.com">christy</maintainer>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>webots_ros2_driver</depend>
+  <depend>pluginlib</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

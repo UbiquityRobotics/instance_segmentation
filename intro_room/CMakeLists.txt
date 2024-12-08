@@ -1,32 +1,55 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 project(intro_room)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
-# Find dependencies
+# Besides the package specific dependencies we also need the `pluginlib` and `webots_ros2_driver`
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(webots_ros2_driver REQUIRED)
 
-# Add the executable for node1.cpp
-add_executable(node1 src/node1.cpp)
-ament_target_dependencies(node1 rclcpp)
+# Export the plugin configuration file
+pluginlib_export_plugin_description_file(webots_ros2_driver my_robot_driver.xml)
 
-# Install the executable
-install(TARGETS node1
-  DESTINATION lib/${PROJECT_NAME})
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # The following line skips the linter which checks for copyrights
-  # Comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # The following line skips cpplint (only works in a git repo)
-  # Comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
+# MyRobotDriver library
+add_library(
+  ${PROJECT_NAME}
+  SHARED
+  src/MyRobotDriver.cpp
+)
+target_include_directories(
+  ${PROJECT_NAME}
+  PRIVATE
+  include
+)
+ament_target_dependencies(
+  ${PROJECT_NAME}
+  pluginlib
+  rclcpp
+  webots_ros2_driver
+)
+install(TARGETS
+  ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+# Install additional directories.
+install(DIRECTORY
+  launch
+  resource
+  worlds
+  DESTINATION share/${PROJECT_NAME}/
+)
+ament_export_include_directories(
+  include
+)
+ament_export_libraries(
+  ${PROJECT_NAME}
+)
 ament_package()
