@@ -51,7 +51,7 @@ If you get a prompt to install webots package, accept it.
 In another terminal give the command with the /cmd_vel topic
 
 ```
-os2 topic pub /cmd_vel geometry_msgs/Twist  "linear: { x: 0.1 }"
+ros2 topic pub /cmd_vel geometry_msgs/Twist  "linear: { x: 0.1 }"
 
 ```
 
