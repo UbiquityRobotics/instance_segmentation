@@ -1,0 +1,162 @@
+#VRML_SIM R2023b utf8
+  PROTO gen6s-v1 [
+    field SFVec3f    translation  0 0 0
+    field SFRotation rotation     0 0 1 0
+    field SFFloat    bodyMass     1
+  ]
+  {
+    Robot {
+      translation IS translation
+      rotation IS rotation
+  children [
+    Camera {
+      translation 0.15 0.0005 0.29
+    }
+    DistanceSensor {
+      translation 0.15 -0.05 0.29
+      rotation 1 0 0 1.57
+      name "ds_left"
+    }
+    DistanceSensor {
+      translation 0.15 0.05 0.29
+      rotation 1 0 0 1.57
+      name "ds_right"
+    }
+    DEF eye2 Solid {
+      translation 0.15 0.0005 0.29
+      rotation 0 1 0 1.57
+      children [
+        DEF Eye Shape {
+          appearance PBRAppearance {
+            baseColor 1 0 0
+          }
+          geometry Cylinder {
+            height 0.01
+            radius 0.018
+          }
+        }
+      ]
+      name "solid(2)"
+    }
+    DEF eye1 Solid {
+      translation 0.15 -0.05 0.29
+      rotation 0 1 0 1.57
+      children [
+        USE Eye
+      ]
+      name "solid(3)"
+    }
+    DEF eye3 Solid {
+      translation 0.15 0.05 0.29
+      rotation 0 1 0 1.57
+      children [
+        USE Eye
+      ]
+      name "solid(4)"
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.13 0.08 0.025
+      }
+      device [
+        RotationalMotor {
+          name "motor_1"
+        }
+      ]
+      endPoint Solid {
+        translation 0.13 0.08 0.025
+        rotation 1 0 0 1.57
+        children [
+          DEF Wheel Shape {
+            appearance PBRAppearance {
+              baseColor 0 0 0.498039
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.01
+              radius 0.025
+            }
+          }
+        ]
+        boundingObject USE Wheel
+        physics DEF wheelPhysics Physics {
+        }
+      }
+    }
+    DEF BODY Pose {
+      translation 0 0 0.17
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.180392 0.180392 0.180392
+            roughness 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.3 0.15 0.3
+          }
+        }
+      ]
+    }
+    HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.13 -0.08 0.025
+      }
+      device [
+        RotationalMotor {
+          name "motor_2"
+        }
+      ]
+      endPoint Solid {
+        translation 0.13 -0.08 0.025
+        rotation 1 0 0 1.57
+        children [
+          USE Wheel
+        ]
+        name "solid(1)"
+        boundingObject USE Wheel
+        physics USE wheelPhysics
+      }
+    }
+    BallJoint {
+      jointParameters BallJointParameters {
+        anchor -0.125 0 0.015
+      }
+      jointParameters2 JointParameters {
+      }
+      jointParameters3 JointParameters {
+        axis 0 1 0
+      }
+      endPoint Solid {
+        translation -0.125 0 0.015
+        children [
+          DEF caster Shape {
+            appearance PBRAppearance {
+              baseColor 0.317647 0.317647 0.317647
+              roughness 1
+              metalness 0
+            }
+            geometry Sphere {
+              radius 0.025
+            }
+          }
+        ]
+        name "solid(5)"
+        boundingObject USE caster
+        physics DEF casterPhysics Physics {
+        }
+      }
+    }
+  ]
+  boundingObject USE BODY
+  physics Physics {
+    density -1
+    mass IS bodyMass
+  }
+  controller "ros"
+}
+
+  }
