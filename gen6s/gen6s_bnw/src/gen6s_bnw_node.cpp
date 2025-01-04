@@ -14,6 +14,7 @@ public:
             "/imu/data", 10,
             std::bind(&Gen6sBnwNode::imageCallback, this, std::placeholders::_1));
     }
+    
 
 private:
     void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
