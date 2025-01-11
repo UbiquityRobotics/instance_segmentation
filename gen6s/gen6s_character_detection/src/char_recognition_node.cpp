@@ -4,6 +4,9 @@
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <tesseract/baseapi.h> //sudo apt install tesseract-ocr libtesseract-dev
+#include <leptonica/allheaders.h> //sudo apt-get install libcanberra-gtk-module libcanberra-gtk3-module
+
 
 class CharRecognitionNode : public rclcpp::Node {
 public:
@@ -92,9 +95,14 @@ private:
 
         // Apply closing to fill gaps
         cv::morphologyEx(binary, morph, cv::MORPH_CLOSE, kernel);
+        cv::imshow("Closed Image", morph);
 
         // Optional: Apply opening to remove noise
         cv::morphologyEx(morph, morph, cv::MORPH_OPEN, kernel);
+        cv::imshow("Opened Image", morph);
+
+        // Recognize text in the ROI using Tesseract
+                std::string text = recognizeTextWithTesseract(morph);
 
         // Replace binary with the cleaned image
         binary = morph;
@@ -152,10 +160,37 @@ private:
         text_msg.data = recognized_text;
         text_pub_->publish(text_msg);
 
-        RCLCPP_INFO(this->get_logger(), "Recognized Text: %s", recognized_text.c_str());
+        // RCLCPP_INFO(this->get_logger(), "Recognized Text: %s", recognized_text.c_str());
+        RCLCPP_INFO(this->get_logger(), "Recognized Text from tesseract: %s", text.c_str());
     }
 
-    char matchCharacter(const cv::Mat &character) {
+    std::string recognizeTextWithTesseract(const cv::Mat &roi) { 
+        // Initialize Tesseract API
+        tesseract::TessBaseAPI tess;
+        tess.Init(NULL, "eng", tesseract::OEM_LSTM_ONLY);  // Use English language pack
+        tess.SetPageSegMode(tesseract::PSM_SINGLE_BLOCK); // Single block of text
+
+        // Convert OpenCV image to Leptonica Pix format
+        Pix *pix = pixCreate(roi.cols, roi.rows, 8);
+        for (int y = 0; y < roi.rows; y++) {
+            for (int x = 0; x < roi.cols; x++) {
+                pixSetPixel(pix, x, y, roi.at<uchar>(y, x));
+            }
+        }
+
+        tess.SetImage(pix);
+        std::string text = tess.GetUTF8Text();
+        pixDestroy(&pix);
+
+        // Check if text is empty and assign default value
+        if (text.empty() || text.find_first_not_of(" \t\n\r") == std::string::npos) {
+            text = "No text to detect";
+        }
+
+        return text;
+    }
+
+    char matchCharacter(const cv::Mat &character) { //for template matching
         char best_match = '\0';
         double best_score = 0.0;
 
@@ -181,6 +216,8 @@ private:
         return '\0';
     }
 };
+
+ 
 
 int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
