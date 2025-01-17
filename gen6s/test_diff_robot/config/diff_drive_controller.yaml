@@ -1,7 +1,8 @@
+---
 controller_manager:
   ros__parameters:
     update_rate: 50
-    robot_description: ""
+    robot_description: "robot_description"
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -13,7 +14,7 @@ controller_manager:
         command_interface: velocity
         left_wheel_names: ["left_wheel_joint"]
         right_wheel_names: ["right_wheel_joint"]
-        wheel_separation: 0.3 # Adjust according to your robot's dimensions
+        wheel_separation: 0.3   # Adjust according to your robot's dimensions
         wheel_radius: 0.05    # Adjust according to your wheel radius
         odom_frame: "odom"
         base_frame: "base_link"
