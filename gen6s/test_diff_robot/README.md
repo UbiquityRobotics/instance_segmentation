@@ -22,3 +22,7 @@ Next, open RViz and set the fixed frame.
 2. In the "Global Options" section, set the "Fixed Frame" to `base_link`.
 3. Add necessary displays such as RobotModel, TF, and LaserScan to visualize the robot.
 
+
+to test if the xacro format is correct run
+xacro path_to_yout_file.xacro
+

@@ -8,9 +8,20 @@ from launch.actions import ExecuteProcess, LogInfo, TimerAction
 
 def generate_launch_description():
 
+    # urdf_file = PathJoinSubstitution([
+    #     FindPackageShare('test_diff_robot'),  # Replace with your package name
+    #     'urdf',
+    #     # 'test_diff_robot.urdf.xacro'
+    #     'test_diff_robot.urdf'
+    # ])
+
+    # package_name = "test_diff_robot"
+    # urdf_file_name = "test_diff_robot.urdf"  # Adjust based on your URDF filename
+    # urdf_path = PathJoinSubstitution([FindPackageShare(package_name), "urdf", urdf_file_name])
+    # yaml_path = PathJoinSubstitution([FindPackageShare(package_name), "config", "diff_drive_controller.yaml"])
 
     robot_package = "test_diff_robot"
-    urdf_file_name = "test_diff_robot.urdf.xacro"  # Adjust based on your URDF filename
+    urdf_file_name = "test_diff_robot.urdf"  # Adjust based on your URDF filename
     # urdf_path = PathJoinSubstitution([FindPackageShare(urdf_package), "urdf", urdf_file_name])
     # yaml_path = PathJoinSubstitution([FindPackageShare(urdf_package), "config", "diff_drive_controller.yaml"])
 
@@ -22,8 +33,7 @@ def generate_launch_description():
     # urdf_path = PathJoinSubstitution(
     #     [pkg_share_description, 'urdf', urdf_file_name])
     urdf_dir = os.path.join(pkg_share_description, 'urdf')
-    robots_dir = os.path.join(urdf_dir, 'robots')
-    urdf_path = os.path.join(robots_dir, urdf_file_name)
+    urdf_path = os.path.join(urdf_dir, urdf_file_name)
     # yaml_path = PathJoinSubstitution(
     #     [pkg_share_description, 'config', yaml_file_name])
     
@@ -88,62 +98,50 @@ def generate_launch_description():
                 namespace='/robot_namespace',
                 name='controller_manager',
                 parameters=[
-                    # {'robot_description': robot_desc},
-
                     {'robot_description': robot_desc},
                     config_path  # Load your YAML configuration
                 ],
                 output='screen'
             ),
 
+        Node(
+            package='controller_manager',
+            executable='spawner',
+            namespace='/robot_namespace' , 
+            arguments=['joint_state_broadcaster'],
+            name='joint_state_broadcaster_spawner',
+            output='screen',
+        ),
 
-            # adding a delay to ensure the robot is spawned before the controllers are loaded
+        # Diff Drive Controller manager
+        # Node(
+        #     package='controller_manager',
+        #     executable='spawner',
+        #     namespace='/robot_namespace',
+        #     arguments=['diff_drive_controller'],
+        #     name='diff_drive_controller_spawner',
+        #     output='screen',
+        #     parameters=[PathJoinSubstitution([
+        #     FindPackageShare('test_diff_robot'),  # Replace with your package name
+        #     'config',
+        #     'diff_drive_controller.yaml'
+        #     ])],
+        # ),
 
-            TimerAction(
-                        period=5.0,  # Delay for 5 seconds
-                        actions=[
-
-                            Node(
-                                package='controller_manager',
-                                executable='spawner',
-                                namespace='/robot_namespace' , 
-                                arguments=['joint_state_broadcaster'],
-                                name='joint_state_broadcaster_spawner',
-                                output='screen',
-                            ),
-
-                            # Diff Drive Controller manager
-                            # Node(
-                            #     package='controller_manager',
-                            #     executable='spawner',
-                            #     namespace='/robot_namespace',
-                            #     arguments=['diff_drive_controller'],
-                            #     name='diff_drive_controller_spawner',
-                            #     output='screen',
-                            #     parameters=[PathJoinSubstitution([
-                            #     FindPackageShare('test_diff_robot'),  # Replace with your package name
-                            #     'config',
-                            #     'diff_drive_controller.yaml'
-                            #     ])],
-                            # ),
-
-                            Node(
-                                package='controller_manager',
-                                executable='spawner',
-                                namespace='/robot_namespace',
-                                arguments=['diff_drive_controller'],
-                                name='diff_drive_controller_spawner',
-                                output='screen',
-                                # parameters=[PathJoinSubstitution([
-                                # FindPackageShare('test_diff_robot'),  # Replace with your package name
-                                # 'config',
-                                # 'diff_drive_controller.yaml'
-                                # ])],
-                                parameters=[config_path],
-                            )
-                            ]
-            ),          
-
+        Node(
+            package='controller_manager',
+            executable='spawner',
+            namespace='/robot_namespace',
+            arguments=['diff_drive_controller'],
+            name='diff_drive_controller_spawner',
+            output='screen',
+            # parameters=[PathJoinSubstitution([
+            # FindPackageShare('test_diff_robot'),  # Replace with your package name
+            # 'config',
+            # 'diff_drive_controller.yaml'
+            # ])],
+            parameters=[config_path],
+        ),
 
         # Launch Gazebo with an empty world
         ExecuteProcess(
