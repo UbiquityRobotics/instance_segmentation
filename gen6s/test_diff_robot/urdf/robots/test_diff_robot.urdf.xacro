@@ -130,5 +130,20 @@
             <origin xyz="0.2 0 0.05"/>
             <axis xyz="0 1 0"/>
         </joint>
+
+        <!-- Gazebo reference: -->
+        <gazebo reference="right_wheel">
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="left_wheel">
+            <material>Gazebo/Blue</material>
+        </gazebo>
+
+        <gazebo reference="caster_wheel">
+            <material>Gazebo/Gray</material>
+        </gazebo>
+
+
     </robot>
 
