@@ -1,18 +1,19 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>gen6s</name>
+  <name>gen6s_character_detection</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="metalliccj@gmail.com">thechristyjo</maintainer>
-  <license>BSD-3-Clause</license>
+  <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>gen6s_description</exec_depend>
-  <exec_depend>gen6s_bnw</exec_depend>
-  <exec_depend>gen6s_color</exec_depend>
-  <exec_depend>gen6s_character_detection</exec_depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>OpenCV</depend>
+  <depend>ament_index_cpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
