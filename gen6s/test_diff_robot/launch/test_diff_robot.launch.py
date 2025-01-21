@@ -4,6 +4,7 @@ from launch_ros.actions import Node
 from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import ExecuteProcess, LogInfo, TimerAction
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -16,6 +17,13 @@ def generate_launch_description():
 
     # urdf_package = "test_diff_robot"
     yaml_file_name = "diff_drive_controller.yaml" 
+
+    # Path to the RViz config file
+    rviz_config_file = PathJoinSubstitution([
+        FindPackageShare(robot_package),
+        "config",
+        "robot_config.rviz"
+    ])
 
     pkg_share_description = FindPackageShare(robot_package).find(robot_package)
     # default_urdf_model_path = PathJoinSubstitution(
@@ -71,7 +79,10 @@ def generate_launch_description():
             # parameters=[{"robot_description": urdf_path}, config_path], #second last, shows error
             # parameters=[params], #works best 
             # parameters=[{"robot_description": urdf_path}],
-            parameters=[{'robot_description': Command(['cat ', urdf_path])}],  #works best when using the urdf as urdf requires the entire descrtrription and not the path
+            parameters=[{
+                        'robot_description': ParameterValue(robot_desc, value_type=str)
+                        }],
+            # parameters=[{'robot_description': Command(['cat ', urdf_path])}],  #works best when using the urdf as urdf requires the entire descrtrription and not the path
             arguments=['--ros-args', '--log-level', 'info'] #added logging to inspect errors
         ),
 
@@ -168,6 +179,15 @@ def generate_launch_description():
                 )
             ]
         ), #spawining successfully done
+
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=["-d", rviz_config_file],
+            output='screen',
+            # arguments=['-d', os.path.join(pkg_share_description, 'config', 'rviz_config.rviz')]  # Adjust path to your RViz config file if you have one
+        ),
 
 
         
