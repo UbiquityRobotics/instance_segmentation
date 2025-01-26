@@ -26,3 +26,7 @@ Next, open RViz and set the fixed frame.
 to test if the xacro format is correct run
 xacro path_to_yout_file.xacro
 
+
+
+important installation
+sudo apt install ros-humble-gz-ros2-control 

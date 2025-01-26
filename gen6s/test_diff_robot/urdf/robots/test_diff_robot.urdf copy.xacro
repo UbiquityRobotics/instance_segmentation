@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-    <robot xmlns:xacro="http://wiki.ros.org/xacro" name="gen6s_diff">
+    <robot xmlns:xacro="http://wiki.ros.org/xacro">
     <!-- <xacro:property name="pi" value="3.141592653589793" /> -->
         <xacro:include filename="inertial_macros.xacro"/>
         <!-- <xacro:include filename="camera.xacro"/>  -->
@@ -163,7 +163,6 @@
             <material>Gazebo/Gray</material>
         </gazebo>
 
-        <!-- <xacro:include filename="gazebo_control.xacro"/> -->
-        <xacro:include filename="Ros2_control.xacro"/>
+
     </robot>
 
