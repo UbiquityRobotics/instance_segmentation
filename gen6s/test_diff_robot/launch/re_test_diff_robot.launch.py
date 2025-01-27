@@ -34,7 +34,9 @@ def generate_launch_description():
 
     # Package and file paths
     robot_package = "test_diff_robot"
-    urdf_file_name = "test_diff_robot.urdf.xacro"
+    # urdf_file_name = "test_diff_robot.urdf.xacro"
+    urdf_file_name = "diff_drive_robot.urdf"
+
     # yaml_file_name = "diff_drive_controller.yaml"
     yaml_file_name = "my_controllers.yaml"
 
@@ -57,6 +59,8 @@ def generate_launch_description():
     #alternatively try to use the xacro file directly
     # Add this path for the expanded URDF
     expanded_urdf_path = os.path.join(pkg_share, "urdf", "robots", "expanded_robot_description.urdf")
+    # expanded_urdf_path = os.path.join(pkg_share, "urdf", "robots", "diff_drive_robot.urdf")
+
 
     # Process the xacro file into an expanded URDF
     generate_expanded_urdf = ExecuteProcess(

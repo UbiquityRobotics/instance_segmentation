@@ -26,6 +26,15 @@ Next, open RViz and set the fixed frame.
 to test if the xacro format is correct run
 xacro path_to_yout_file.xacro
 
+xacro test_diff_robot.urdf.xacro > expanded_robot_description.urdf
+
+ros2 run urdf_parser_py check_urdf expanded_robot_description.urdf
+
+check_urdf expanded_robot_description.urdf
+
+ros2 run rqt_image_view rqt_image_view
+
+
 
 
 important installation
