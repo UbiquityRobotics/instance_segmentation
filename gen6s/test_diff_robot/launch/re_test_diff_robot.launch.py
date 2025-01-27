@@ -7,6 +7,7 @@ from launch_ros.actions import Node
 from launch.substitutions import FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch.actions import ExecuteProcess, LogInfo
 from launch_ros.substitutions import FindPackageShare
+from ament_index_python.packages import get_package_share_directory
 import xacro
 
 def generate_launch_description():
@@ -32,7 +33,7 @@ def generate_launch_description():
     robot_package = "test_diff_robot"
     urdf_file_name = "test_diff_robot.urdf.xacro"
     # yaml_file_name = "diff_drive_controller.yaml"
-    yaml_file_name = "my_controllers    .yaml"
+    yaml_file_name = "my_controllers.yaml"
 
     # Paths
     pkg_share = FindPackageShare(robot_package).find(robot_package)
@@ -47,14 +48,19 @@ def generate_launch_description():
     robot_description = {"robot_description": robot_description_content}
 
     # Nodes
-    control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[robot_description, {"yaml_description": yaml_path}],
-        output="both",
-        remappings=[
-            ("~/robot_description", "/robot_description"),
-        ],
+    control_node = TimerAction(
+    period=10.0,  # Delay in seconds
+    actions=[
+        Node(
+            package="controller_manager",
+            executable="ros2_control_node",
+            parameters=[robot_description, {"yaml_description": yaml_path}],
+            output="both",
+            remappings=[
+                ("~/robot_description", "/robot_description"),
+            ],
+        )
+    ]
     )
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
@@ -76,6 +82,13 @@ def generate_launch_description():
         arguments=["diff_drive_controller"],
         output="screen",
     )
+
+    # cmd_vel publisher node
+    # cmd_vel_publisher_node = Node(
+    #     package='test_diff_robot',  # 
+    #     executable='cmd_vel_publisher',  # Replace with the name of the Python script
+    #     output='screen',
+    # )
 
     # Delay joint state broadcaster start after controller
     delay_joint_state_broadcaster = RegisterEventHandler(
@@ -118,13 +131,31 @@ def generate_launch_description():
         output="screen",
     )
 
-    # Delay RViz2 start after joint state broadcaster
-    delay_rviz_after_joint_state_broadcaster = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[rviz_node],
-        )
+    bridge_params = os.path.join(get_package_share_directory(robot_package),'config','gz_bridge.yaml')
+    ros_gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            '--ros-args',
+            '-p',
+            f'config_file:={bridge_params}',
+        ]
     )
+
+    # rviz_node = Node(
+    # package="rviz2",
+    # executable="rviz2",
+    # name="rviz2",
+    # output="screen",
+    # )
+
+    # Delay RViz2 start after joint state broadcaster
+    # delay_rviz_after_joint_state_broadcaster = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=joint_state_broadcaster_spawner,
+    #         on_exit=[rviz_node],
+    #     )
+    # )
 
     # Create the launch description
     nodes = [
@@ -137,7 +168,10 @@ def generate_launch_description():
         delay_joint_state_broadcaster,
         gazebo_process,
         spawn_urdf_in_gazebo,
-        delay_rviz_after_joint_state_broadcaster,
+        rviz_node,
+        ros_gz_bridge
+        # delay_rviz_after_joint_state_broadcaster,
     ]
 
-    return LaunchDescription(declared_arguments + nodes)
+    return LaunchDescription(declared_arguments + nodes
+                              )

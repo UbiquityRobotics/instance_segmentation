@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
     <robot xmlns:xacro="http://wiki.ros.org/xacro" name="gen6s_diff">
     <!-- <xacro:property name="pi" value="3.141592653589793" /> -->
+        <xacro:arg name="sim_mode" default="false"/>
         <xacro:include filename="inertial_macros.xacro"/>
-        <!-- <xacro:include filename="camera.xacro"/>  -->
+        <xacro:include filename="camera.xacro"/> 
         <!-- Include camera.xacro -->
 
         <!-- Colors -->
@@ -164,6 +165,6 @@
         </gazebo>
 
         <!-- <xacro:include filename="gazebo_control.xacro"/> -->
-        <xacro:include filename="Ros2_control.xacro"/>
+        <xacro:include filename="ros2_control.xacro"/>
     </robot>
 

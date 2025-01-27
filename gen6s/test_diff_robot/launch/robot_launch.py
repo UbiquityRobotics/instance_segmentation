@@ -6,7 +6,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     pkg_path = get_package_share_directory('test_diff_robot')
-    urdf_path = os.path.join(pkg_path, 'urdf','robots', 'robot.urdf.xacro')
+    urdf_path = os.path.join(pkg_path, 'urdf','robots', 'test_diff_robot_main.urdf.xacro    ')
     
     return LaunchDescription([
         ExecuteProcess(

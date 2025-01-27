@@ -16,6 +16,14 @@ differential_drive_controller:
     wheel_radius: 0.05
     tf_frame_prefix: ''
     publish_limited_velocity: true
+    
+    # Set initial velocities to zero
+    linear.x: 0.0
+    angular.z: 0.0
+    
+    # Disable automatic movement
+    enable_odom_tf: false
+    publish_cmd: false
 
 joint_state_broadcaster:
   ros__parameters:

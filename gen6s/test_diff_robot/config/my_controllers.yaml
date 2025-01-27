@@ -1,7 +1,7 @@
 controller_manager:
   ros__parameters:
     update_rate: 30
-    use_sim_time: true
+    # use_sim_time: true #use in gazebo sim yaml
 
     diff_cont:
       type: diff_drive_controller/DiffDriveController
@@ -10,7 +10,7 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
 
 diff_cont:
-  ros__parameters:
+  ros__parameters:  
 
     publish_rate: 50.0
 
@@ -18,10 +18,13 @@ diff_cont:
 
     left_wheel_names: ['left_wheel_joint']
     right_wheel_names: ['right_wheel_joint']
-    wheel_separation: 0.3 #multiply the distance form the center of the robot to the wheel by 2
+    wheel_separation: 0.3
     wheel_radius: 0.05
-
+    cmd_vel_topic: "/cmd_vel"
+    publish_rate: 50
     use_stamped_vel: false
+
+    # use_stamped_vel: false
 
     # open_loop: false    
 

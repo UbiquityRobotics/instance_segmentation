@@ -7,6 +7,7 @@ from launch.actions import ExecuteProcess, LogInfo, TimerAction
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument
+from ament_index_python.packages import get_package_share_directory
 import sys
 
 
@@ -79,7 +80,16 @@ def generate_launch_description():
 
     params = {'yaml_description': config_desc}
 
-    
+    bridge_params = os.path.join(get_package_share_directory(robot_package),'config','gz_bridge.yaml')
+    ros_gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            '--ros-args',
+            '-p',
+            f'config_file:={bridge_params}',
+        ]
+    )
 
 
 
@@ -244,6 +254,8 @@ def generate_launch_description():
             output='screen',
             # arguments=['-d', os.path.join(pkg_share_description, 'config', 'rviz_config.rviz')]  # Adjust path to your RViz config file if you have one
         ),
+
+        ros_gz_bridge
 
 
         
