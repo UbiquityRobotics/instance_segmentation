@@ -83,5 +83,6 @@
         <axis xyz="0 0 1"/>
     </joint>
 
+    <xacro:include filename="camera.xacro"/>
     <xacro:include filename="ros2_control.xacro"/>
 </robot>

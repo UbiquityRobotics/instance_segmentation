@@ -239,7 +239,8 @@ def generate_launch_description():
                         '--reqtype', 'gz.msgs.EntityFactory',
                         '--reptype', 'gz.msgs.Boolean',
                         '--timeout', '1000',
-                        '--req', f'sdf_filename: "{urdf_path}", name: "urdf_model"'
+                        # '--req', f'sdf_filename: "{urdf_path}", name: "urdf_model"'
+                        '--req', f'sdf_filename: "{robot_description_config}", name: "urdf_model"'
                     ],
                     output='screen'
                 )

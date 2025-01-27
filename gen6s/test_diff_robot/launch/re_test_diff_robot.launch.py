@@ -11,6 +11,9 @@ from ament_index_python.packages import get_package_share_directory
 import xacro
 
 def generate_launch_description():
+
+    robotXacroName = 'test_diff_robot'
+
     # Declare arguments
     declared_arguments = [
         DeclareLaunchArgument(
@@ -43,8 +46,29 @@ def generate_launch_description():
         [FindPackageShare(robot_package), "config", "robot_config.rviz"]
     )
 
+
+
+    # # Get URDF via xacro
+    # robot_description_content = xacro.process_file(urdf_path).toxml()
+    # robot_description = {"robot_description": robot_description_content}
+
+
+
+    #alternatively try to use the xacro file directly
+    # Add this path for the expanded URDF
+    expanded_urdf_path = os.path.join(pkg_share, "urdf", "robots", "expanded_robot_description.urdf")
+
+    # Process the xacro file into an expanded URDF
+    generate_expanded_urdf = ExecuteProcess(
+        cmd=[
+            "xacro", urdf_path, ">", expanded_urdf_path
+        ],
+        shell=True,  # Allow shell commands for the redirection
+        output="screen",
+    )
+
     # Get URDF via xacro
-    robot_description_content = xacro.process_file(urdf_path).toxml()
+    robot_description_content = xacro.process_file(expanded_urdf_path).toxml()
     robot_description = {"robot_description": robot_description_content}
 
     # Nodes
@@ -65,6 +89,7 @@ def generate_launch_description():
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
+        name='robot_state_publisher',
         output="both",
         parameters=[{
             'use_sim_time': use_sim_time,
@@ -114,12 +139,17 @@ def generate_launch_description():
                     "--reqtype", "gz.msgs.EntityFactory",
                     "--reptype", "gz.msgs.Boolean",
                     "--timeout", "1000",
-                    "--req", f'sdf_filename: "{urdf_path}", name: "urdf_model"'
+                    "--req", f'sdf_filename: "{expanded_urdf_path}", name: "urdf_model"'
                 ],
                 output="screen",
             )
         ],
     )
+
+    # URDF spawning in Gazebo
+
+    # spawnModelNode = Node(package='gazebo_ros', executable='spawn_entity.py',
+    #                       arguments=['-topic','robot_description','-entity', robotXacroName],output='screen')
 
     # RViz2 Node
     rviz_node = Node(
@@ -162,12 +192,14 @@ def generate_launch_description():
         LogInfo(msg=f"URDF Path: {urdf_path}"),
         LogInfo(msg=f"YAML Path: {yaml_path}"),
         DeclareLaunchArgument("use_sim_time", default_value="false", description="Use sim time if true"),
+        generate_expanded_urdf,
         control_node,
         robot_state_publisher_node,
         diff_drive_controller_spawner,
         delay_joint_state_broadcaster,
         gazebo_process,
         spawn_urdf_in_gazebo,
+        # spawnModelNode,
         rviz_node,
         ros_gz_bridge
         # delay_rviz_after_joint_state_broadcaster,
