@@ -35,7 +35,7 @@ def generate_launch_description():
     # Package and file paths
     robot_package = "test_diff_robot"
     # urdf_file_name = "test_diff_robot.urdf.xacro"
-    urdf_file_name = "diff_drive_robot.urdf.xacro"
+    urdf_file_name = "diff_drive_robot.infloor.urdf.xacro"
     # urdf_file_name = "diff_drive_robot.urdf.copy.xacro"
 
     # yaml_file_name = "diff_drive_controller.yaml"

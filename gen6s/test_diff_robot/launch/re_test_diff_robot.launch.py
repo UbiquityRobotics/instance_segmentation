@@ -12,80 +12,77 @@ from ament_index_python.packages import get_package_share_directory
 import xacro
 
 def generate_launch_description():
-
     robotXacroName = 'test_diff_robot'
 
     # Declare arguments
     declared_arguments = [
-        DeclareLaunchArgument(
-            "use_sim_time",
-            default_value="false",
-            description="Use simulation time"
-        ),
-        DeclareLaunchArgument(
-            "gui",
-            default_value="true",
-            description="Start RViz2 automatically with this launch file"
-        )
+        DeclareLaunchArgument("use_sim_time", default_value="false", description="Use simulation time"),
+        DeclareLaunchArgument("gui", default_value="true", description="Start RViz2 automatically"),
+        DeclareLaunchArgument("world", default_value="empty.sdf", description="Specify the Gazebo world file"),
+        DeclareLaunchArgument("x", default_value="0.0", description="Initial X position"),
+        DeclareLaunchArgument("y", default_value="0.0", description="Initial Y position"),
+        DeclareLaunchArgument("z", default_value="0.5", description="Initial Z position"),
+        DeclareLaunchArgument("R", default_value="0.0", description="Initial Roll"),
+        DeclareLaunchArgument("P", default_value="0.0", description="Initial Pitch"),
+        DeclareLaunchArgument("Y", default_value="0.0", description="Initial Yaw"),
     ]
 
-    # Initialize arguments
+    # Retrieve launch configurations
+    world_file = LaunchConfiguration('world')
+    x, y, z = LaunchConfiguration('x'), LaunchConfiguration('y'), LaunchConfiguration('z')
+    roll, pitch, yaw = LaunchConfiguration('R'), LaunchConfiguration('P'), LaunchConfiguration('Y')
     use_sim_time = LaunchConfiguration("use_sim_time")
     gui = LaunchConfiguration("gui")
 
     # Package and file paths
     robot_package = "test_diff_robot"
-    urdf_file_name = "diff_drive_robot.urdf.xacro"
+    urdf_file_name = "diff_drive_robot.infloor.urdf.xacro"
     yaml_file_name = "my_controllers.yaml"
 
     # Paths
-    pkg_share = FindPackageShare(robot_package).find(robot_package)
+    pkg_share = get_package_share_directory(robot_package)
     urdf_path = os.path.join(pkg_share, "urdf", "robots", urdf_file_name)
     yaml_path = os.path.join(pkg_share, "config", yaml_file_name)
-    rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare(robot_package), "config", "robot_config.rviz"]
-    )
-
-    # Add path for the expanded URDF
+    rviz_config_file = PathJoinSubstitution([FindPackageShare(robot_package), "config", "robot_config.rviz"])
+    
+    # Expanded URDF file path
     expanded_urdf_path = os.path.join(pkg_share, "urdf", "robots", "expanded_robot_description.urdf")
 
     # Process the xacro file into an expanded URDF
     generate_expanded_urdf = ExecuteProcess(
-        cmd=[
-            "xacro", urdf_path, ">", expanded_urdf_path
-        ],
-        shell=True,  # Allow shell commands for the redirection
+        cmd=["xacro", urdf_path],
         output="screen",
+        shell=False
     )
 
-    # Get URDF via xacro
-    robot_description_content = xacro.process_file(expanded_urdf_path).toxml()
+    # Load the robot description after generating the URDF
+    robot_description_content = xacro.process_file(urdf_path).toxml()
     robot_description = {"robot_description": robot_description_content}
 
-    # Nodes
+    # Control Node
     control_node = TimerAction(
-        period=10.0,  # Delay in seconds
+        period=10.0,
         actions=[
             Node(
                 package="controller_manager",
                 executable="ros2_control_node",
                 parameters=[robot_description, {"yaml_description": yaml_path}],
                 output="both",
-                remappings=[
-                    ("~/robot_description", "/robot_description"),
-                ],
+                remappings=[("~/robot_description", "/robot_description")],
             )
         ]
     )
+
+    # Robot State Publisher
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         name='robot_state_publisher',
         output="both",
-        parameters=[{
-            'use_sim_time': use_sim_time,
-            'robot_description': robot_description_content}]
+        parameters=[{'use_sim_time': use_sim_time, 'robot_description': robot_description_content}]
     )
+
+    # Spawning controllers
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -99,6 +96,7 @@ def generate_launch_description():
         output="screen",
     )
 
+    # Ensure `joint_state_broadcaster_spawner` starts after `diff_drive_controller_spawner`
     delay_joint_state_broadcaster = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=diff_drive_controller_spawner,
@@ -107,34 +105,31 @@ def generate_launch_description():
     )
 
     # Include Gazebo launch description
-    gazebo = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource(
-        os.path.join(
-            get_package_share_directory("ros_gz_sim"),
-            "launch",
-            "gz_sim.launch.py",
-        )
-    ),
-    launch_arguments={
-        "gz_args": "-v 4 default.sdf"  # Adjust the world file as needed
-    }.items(),
-)
+    gazebo_pkg_launch = PythonLaunchDescriptionSource(
+        os.path.join(get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')
+    )
+    gazebo_launch = IncludeLaunchDescription(
+        gazebo_pkg_launch,
+        launch_arguments={'gz_args': [f'-r -v 4 ', world_file]}.items()
+    )
 
-    spawn_urdf_in_gazebo = TimerAction(
-    period=5.0,  # Delay of 5 seconds to ensure Gazebo is fully initialized
-    actions=[
-        ExecuteProcess(
-            cmd=[
-                "gz", "service", "-s", "/world/default/create",
-                "--reqtype", "gz.msgs.EntityFactory",
-                "--reptype", "gz.msgs.Boolean",
-                "--timeout", "1000",
-                "--req", f'sdf_filename: "{expanded_urdf_path}", name: "urdf_model"'
-            ],
-            output="screen",
-        )
-    ],
-)
+    # Spawn model in Gazebo
+    spawn_model_gazebo_node = Node(
+        package='ros_gz_sim',
+        executable='create',
+        arguments=[
+            '-name', robotXacroName,
+            '-string', robot_description_content,
+            '-x', x,
+            '-y', y,
+            '-z', z,
+            '-R', roll,
+            '-P', pitch,
+            '-Y', yaw,
+            '-allow_renaming', 'false'
+        ],
+        output='screen',
+    )
 
     # RViz2 Node
     rviz_node = Node(
@@ -146,29 +141,26 @@ def generate_launch_description():
         output="screen",
     )
 
+    # Bridge for ROS2-Gazebo communication
     bridge_params = os.path.join(get_package_share_directory(robot_package), 'config', 'gz_bridge.yaml')
     ros_gz_bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
-        arguments=[
-            '--ros-args',
-            '-p',
-            f'config_file:={bridge_params}',
-        ]
+        parameters=[bridge_params],
+        output="screen"
     )
 
-    # Create the launch description
+    # Launch description
     nodes = [
         LogInfo(msg=f"URDF Path: {urdf_path}"),
         LogInfo(msg=f"YAML Path: {yaml_path}"),
-        DeclareLaunchArgument("use_sim_time", default_value="false", description="Use sim time if true"),
         generate_expanded_urdf,
-        control_node,
         robot_state_publisher_node,
+        control_node,
         diff_drive_controller_spawner,
         delay_joint_state_broadcaster,
-        gazebo,
-        spawn_urdf_in_gazebo,
+        gazebo_launch,
+        spawn_model_gazebo_node,
         rviz_node,
         ros_gz_bridge,
     ]
