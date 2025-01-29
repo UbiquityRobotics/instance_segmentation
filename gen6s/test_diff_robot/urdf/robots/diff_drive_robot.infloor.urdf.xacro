@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="andino">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="test_diff_drive_robot">
 
     <xacro:include filename="inertial_macros.xacro"/>
 
@@ -188,6 +188,27 @@
         <material>Gazebo/White</material>
         <mu1 value="0.001"/>
         <mu2 value="0.001"/>
+    </gazebo>
+    <!-- adding the plugins -->
+    <xacro:property name="max_linear_acceleration" value="10"/>
+    <xacro:property name="wheel_separation" value="${chassis_width + wheel_thickness}"/>
+    <gazebo>
+        <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+            <right_joint>right_wheel_joint</right_joint>
+            <left_joint>left_wheel_joint</left_joint>
+            <wheel_separation>${wheel_separation}</wheel_separation>
+            <wheel_radius>${wheel_radius}</wheel_radius>
+            <max_linear_acceleration>${max_linear_acceleration}</max_linear_acceleration>
+            <odom_publish_frequency>100</odom_publish_frequency>
+            <topic>cmd_vel</topic>
+            <odom_topic>odom</odom_topic>
+        </plugin>
+
+        <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+            <topic>joint_states</topic>
+            <joint_name>right_wheel_joint</joint_name>
+            <joint_name>left_wheel_joint</joint_name>
+        </plugin>
     </gazebo>
 
 </robot>
