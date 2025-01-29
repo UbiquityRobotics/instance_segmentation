@@ -34,6 +34,17 @@ check_urdf expanded_robot_description.urdf
 
 ros2 run rqt_image_view rqt_image_view
 
+check the publishing to the cmd_vel topic
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "linear:
+  x: 0.5
+  y: 0.0
+  z: 0.0
+angular:
+  x: 0.0
+  y: 0.0
+  z: 0.5"
+
+ros2 run joint_state_publisher_gui joint_state_publisher_gui
 
 
 
