@@ -12,8 +12,8 @@ find_package(xacro REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-# Install URDF and meshes
-install(DIRECTORY urdf meshes launch
+# Install URDF,meshes,launch and world files
+install(DIRECTORY urdf meshes launch worlds
   DESTINATION share/${PROJECT_NAME}
 )
 

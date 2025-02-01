@@ -8,15 +8,37 @@ from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 import xacro
+from launch.actions import OpaqueFunction
+
+
 
 def generate_launch_description():
     robotXacroName = 'differential_drive_robot'
+
+    # Package and file pathsz
+    robot_package = "test_diff_robot"
+    # urdf_file_name = "robot.xacro"
+    urdf_file_name = "diff_drive_robot.infloor2.urdf.xacro"
+
+    # urdf_file_name = "diff_drive_robot.infloor.urdf.xacro"
+    yaml_file_name = "gz_bridge.yaml"
+
+    # world file name
+    world_file_name = "empty.world"
+
+    pkg_share = get_package_share_directory(robot_package)
+    world_path = os.path.join(pkg_share, "worlds", world_file_name)
+
+    #debugging world path issue
+    print(f"Computed world file path: {world_path}")
+
 
     # Declare arguments
     declared_arguments = [
         DeclareLaunchArgument("use_sim_time", default_value="false", description="Use simulation time"),
         DeclareLaunchArgument("gui", default_value="true", description="Start RViz2 automatically"),
-        DeclareLaunchArgument("world", default_value="empty.sdf", description="Specify the Gazebo world file"),
+        # DeclareLaunchArgument("world", default_value="empty.sdf", description="Specify the Gazebo world file"),
+        DeclareLaunchArgument("world", default_value=world_path, description="Specify the Gazebo world file"), #added the new world with configs
         DeclareLaunchArgument("x", default_value="0.0", description="Initial X position"),
         DeclareLaunchArgument("y", default_value="0.0", description="Initial Y position"),
         DeclareLaunchArgument("z", default_value="0.5", description="Initial Z position"),
@@ -25,6 +47,8 @@ def generate_launch_description():
         DeclareLaunchArgument("Y", default_value="0.0", description="Initial Yaw"),
     ]
 
+    
+
     # Retrieve launch configurations
     world_file = LaunchConfiguration('world')
     x, y, z = LaunchConfiguration('x'), LaunchConfiguration('y'), LaunchConfiguration('z')
@@ -32,13 +56,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time")
     gui = LaunchConfiguration("gui")
 
-    # Package and file pathsz
-    robot_package = "test_diff_robot"
-    # urdf_file_name = "robot.xacro"
-    # urdf_file_name = "diff_drive_robot.infloor2.urdf.xacro"0
-
-    urdf_file_name = "diff_drive_robot.infloor.urdf.xacro"
-    yaml_file_name = "gz_bridge.yaml"
+    
 
     # Paths
     pkg_share = get_package_share_directory(robot_package)
@@ -69,7 +87,9 @@ def generate_launch_description():
     )
     gazebo_launch = IncludeLaunchDescription(
         gazebo_pkg_launch,
-        launch_arguments={'gz_args': [f'-r -v 4 ', world_file]}.items()
+        # launch_arguments={'gz_args': [f'-r -v 4 ', world_file]}.items()
+        # launch_arguments={'gz_args': f'-r -v 4 {world_file}'}.items()
+        launch_arguments={'gz_args': ['-r -v4 ', world_file], 'on_exit_shutdown': 'true'}.items()
     )
 
     # Spawn model in Gazebo
@@ -115,6 +135,7 @@ def generate_launch_description():
     nodes = [
         LogInfo(msg=f"URDF Path: {urdf_path}"),
         LogInfo(msg=f"YAML Path: {yaml_path}"),
+        LogInfo(msg=f"World Path: {world_file}"),
         robot_state_publisher_node,
         gazebo_launch,
         spawn_model_gazebo_node,
