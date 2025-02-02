@@ -47,6 +47,6 @@ angular:
 ros2 run joint_state_publisher_gui joint_state_publisher_gui
 
 
-
+Add visualize lidar in the options of gazebo sim to see the lidar data. reload to see the /scan topic publishing
 important installation
 sudo apt install ros-humble-gz-ros2-control 

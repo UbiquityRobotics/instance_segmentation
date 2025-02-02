@@ -3,7 +3,7 @@
 
     <xacro:include filename="inertial_macros.xacro"/>
     <!-- adding the camera node -->
-    <!-- <xacro:include filename="camera.xacro"/>      -->
+    <xacro:include filename="camera.xacro"/>     
     <xacro:include filename="lidar.xacro"/> 
 
     <xacro:property name="chassis_length" value="0.335"/>
