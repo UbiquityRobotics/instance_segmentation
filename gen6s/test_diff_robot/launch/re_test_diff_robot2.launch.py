@@ -131,6 +131,14 @@ def generate_launch_description():
         output='screen'
     )
 
+    # Bridge for the image node
+    gz_image_bridge_node = Node(
+        package='ros_gz_image',
+        executable='image_bridge',
+        arguments=['/camera/image_raw'],
+        output='screen'
+    )
+
     # Launch description
     nodes = [
         LogInfo(msg=f"URDF Path: {urdf_path}"),
@@ -140,7 +148,8 @@ def generate_launch_description():
         gazebo_launch,
         spawn_model_gazebo_node,
         rviz_node,
-        gz_bridge_node
+        gz_bridge_node,
+        gz_image_bridge_node
     ]
 
     return LaunchDescription(declared_arguments + nodes)
