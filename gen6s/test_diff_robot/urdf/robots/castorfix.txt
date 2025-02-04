@@ -1,0 +1,40 @@
+<!-- Swivel Link -->
+<link name="caster_swivel">
+    <visual>
+        <geometry>
+            <sphere radius="0.01"/> <!-- A small placeholder visual -->
+        </geometry>
+        <material name="gray"/>
+    </visual>
+</link>
+
+<!-- Swivel Joint -->
+<joint name="caster_swivel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="caster_swivel"/>
+    <origin xyz="0.2 0 0.05" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/> <!-- Rotation around the vertical axis -->
+</joint>
+
+<!-- Caster Wheel -->
+<link name="caster_wheel">
+    <visual>
+        <geometry>
+            <sphere radius="0.05"/> <!-- Caster wheel visual -->
+        </geometry>
+        <material name="gray"/>
+    </visual>
+    <inertial>
+        <mass value="0.5"/>
+        <inertia ixx="0.002" ixy="0.0" ixz="0.0" iyy="0.002" iyz="0.0" izz="0.002"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </inertial>
+</link>
+
+<!-- Rolling Joint -->
+<joint name="caster_wheel_joint" type="continuous">
+    <parent link="caster_swivel"/>
+    <child link="caster_wheel"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/> <!-- Rolling motion -->
+</joint>
